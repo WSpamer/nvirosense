@@ -1,6 +1,6 @@
 import requests
 import json
-from functions.auth import log_response, parse_json
+from nviro_data.auth import log_response, parse_json
 
 
 # Function to fetch devices using JWT token

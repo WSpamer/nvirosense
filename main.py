@@ -1,5 +1,5 @@
-from functions.data import get_nviro_data
-from functions.auth import authenticate
+from nviro_data.data import get_nviro_data
+from nviro_data.auth import authenticate
 
 token = authenticate()
 data = get_nviro_data(token)

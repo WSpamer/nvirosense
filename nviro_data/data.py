@@ -1,4 +1,4 @@
-from functions.fetch import fetch_device_sensors, fetch_devices
+from nviro_data.fetch import fetch_device_sensors, fetch_devices
 import pandas as pd
 
 
