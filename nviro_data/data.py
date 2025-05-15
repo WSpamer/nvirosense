@@ -46,20 +46,21 @@ def get_nviro_data(token):
             group_list.append(group_params)
     df_devices = list_to_df(device_list)
     df_groups = list_to_df(group_list)
+    df_devices["group"] = df_devices["group"].map(df_groups.set_index("name")["id"])
     sensor_list = get_sensors(token, df_devices.to_dict("records"))
     df_sensors = list_to_df(sensor_list)
 
     data = [
         {
-            "name": "Devices",
+            "name": "device",
             "data": df_devices,
         },
         {
-            "name": "Groups",
+            "name": "group",
             "data": df_groups,
         },
         {
-            "name": "Sensors",
+            "name": "sensor",
             "data": df_sensors,
         },
     ]
