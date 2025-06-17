@@ -5,7 +5,7 @@ from loguru import logger
 from nviro_fetch.auth import authenticate
 from nviro_fetch.fetch import fetch_devices
 
-from src.env import env_global
+from env import env_global
 
 
 def get_devices():
@@ -91,6 +91,7 @@ def device_names():
 
     device_names = [device["device_name"] for device in devices]
     return device_names
+
 
 def device_file_name(device_name):
     """

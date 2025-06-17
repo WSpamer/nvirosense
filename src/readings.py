@@ -4,7 +4,8 @@ import pandas as pd
 from loguru import logger
 from nviro_fetch.data import get_device_readings
 
-from src.files import find_file, fix_index
+from env import project_path
+from files import find_file, fix_index
 
 
 def readings_as_df(readings):
@@ -28,7 +29,7 @@ def get_readings(token, device_id, start_date, end_date):
 def export_readings(path_data, df, device, end_date):
     """Exports the readings DataFrame to a CSV file."""
     device_name = device["device_name"].replace(" ", "_").lower()
-    df['datetime'] = df.index
+    df["datetime"] = df.index
     date_end = pd.to_datetime(end_date).strftime("%Y-%m-%d")
     file_path = os.path.join(
         path_data, f"{device_name}_{date_end.replace(' ', '_').replace(':', '-')}.csv"
@@ -36,9 +37,7 @@ def export_readings(path_data, df, device, end_date):
     df.to_csv(file_path, index=False)
 
 
-def import_readings(
-    device_name, readings_directory="data/readings", type="raw"
-):
+def import_readings(device_name, readings_directory="data/readings", type="raw"):
     """import_readings _summary_
 
     Args:
@@ -58,7 +57,19 @@ def import_readings(
         raise ValueError(
             f"Invalid type '{type}' specified. Must be 'raw' or 'cleaned'."
         )
+    readings_directory = os.path.join(project_path, readings_directory)
+    if not os.path.exists(readings_directory):
+        logger.error(f"Readings directory '{readings_directory}' does not exist.")
+        raise ValueError(f"Readings directory '{readings_directory}' does not exist.")
     folder_path = os.path.join(readings_directory, type)
+    if not os.path.exists(folder_path):
+        logger.error(f"Folder path '{folder_path}' does not exist.")
+        raise ValueError(f"Folder path '{folder_path}' does not exist.")
+    if not os.path.isdir(folder_path):
+        logger.error(f"Path '{folder_path}' is not a directory.")
+        raise ValueError(f"Path '{folder_path}' is not a directory.")
+    logger.info(f"Importing readings from folder: {folder_path}")
+
     file = find_file(folder_path, device_name=device_name)
     if file:
         logger.info(f"Importing readings from file: {file}")
@@ -70,7 +81,7 @@ def import_readings(
         index_col = "datetime"
         df[index_col] = pd.to_datetime(df[index_col], errors="coerce")
         df.set_index(index_col, inplace=True)
-        df['dt'] = df.index
+        df["dt"] = df.index
         logger.info(f"Readings imported successfully from {file_path}")
         return df
     else:
