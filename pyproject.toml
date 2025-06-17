@@ -12,9 +12,12 @@ dependencies = [
     "pandas>=2.3.0",
     "pytest>=8.4.0",
     "requests>=2.32.4",
+    "watchdog>=6.0.0",
 ]
 
 [dependency-groups]
 dev = [
     "streamlit>=1.45.1",
 ]
+[tool.uv]
+package = true
