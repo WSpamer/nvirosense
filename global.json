@@ -1,5 +1,5 @@
 {
   "start_date": "2025-05-01 00:00:00",
   "end_date": "2025-06-11 00:00:00",
-  "path_data": "data"
+  "path_data": "../data"
 }
