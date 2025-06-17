@@ -13,3 +13,8 @@ dependencies = [
     "pytest>=8.4.0",
     "requests>=2.32.4",
 ]
+
+[dependency-groups]
+dev = [
+    "streamlit>=1.45.1",
+]
