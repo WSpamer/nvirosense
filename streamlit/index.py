@@ -15,6 +15,8 @@ import_page = st.Page(
 # Initialize session state for data
 if "data" not in st.session_state:
     st.session_state.data = None
+if "loading_data" not in st.session_state:
+    st.session_state.loading_data = False
 if "data_start_date" not in st.session_state:
     st.session_state.data_start_date = None
 if "data_end_date" not in st.session_state:

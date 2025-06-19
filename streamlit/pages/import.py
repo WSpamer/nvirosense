@@ -77,7 +77,7 @@ def main():
     end_date = st.sidebar.date_input("End Date", value=pd.to_datetime("today"))
     # start_time = st.time_input("Start Time", value=pd.to_datetime("now").time())
     # end_time = st.time_input("End Time", value=pd.to_datetime("now").time())
-    st.sidebar.button(
+    import_btn = st.sidebar.button(
         "Fetch Data",
         key="btn_scrape",
     )
@@ -93,9 +93,12 @@ def main():
 
     # Fetch and display live data
     if st.session_state.get("btn_scrape"):
-        st.write(f"Fetching data from {start_date} to {end_date}...")
         try:
+            msg_info = st.sidebar.info(
+                f"Fetching data from \n {start_date} to {end_date}..."
+            )
             data = fetch_data(start_date, end_date)
+            msg_info.empty()  # Clear the loading message
             if not data:
                 st.write("No data available for the selected date range.")
             else:
