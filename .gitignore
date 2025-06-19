@@ -10,7 +10,7 @@ __pycache__/
 *.py[cod]
 
 *django-venv
-# *.ipynb
+*.ipynb
 .env
 
 # Unit test / coverage reports
@@ -36,3 +36,4 @@ nvirosense_code/
 *.csv
 .vscode/
 *.yml
+nvirosense.egg-info/
