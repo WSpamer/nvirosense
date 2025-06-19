@@ -28,10 +28,13 @@ def env_global(name: str = "start_date", file_path: str = "global.json") -> str:
     if not global_settings:
         logger.error("Global settings are empty or not properly loaded.")
         raise ValueError("Global settings are empty or not properly loaded.")
+    if name == "project_path":
+        return project_path
     if name not in global_settings:
         logger.error(f"Global settings must contain '{name}' key.")
         raise KeyError(f"Global settings must contain '{name}' key.")
     if name == "path_data":
         global_settings[name] = os.path.join(project_path, global_settings[name])
         logger.info(f"Updated 'path_data' to: {global_settings[name]}")
+
     return global_settings[name]
