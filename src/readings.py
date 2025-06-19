@@ -29,7 +29,6 @@ def get_readings(token, device_id, start_date, end_date):
 def export_readings(path_data, df, device, end_date):
     """Exports the readings DataFrame to a CSV file."""
     device_name = device["device_name"].replace(" ", "_").lower()
-    df["datetime"] = df.index
     date_end = pd.to_datetime(end_date).strftime("%Y-%m-%d")
     file_path = os.path.join(
         path_data, f"{device_name}_{date_end.replace(' ', '_').replace(':', '-')}.csv"
