@@ -1,5 +1,6 @@
 import datetime
 import json
+import re
 from typing import Optional, Union
 
 import pandas as pd
@@ -113,6 +114,24 @@ def date_string(
         # If the date is not a valid string or Timestamp, return it as is
         raise ValueError(
             f"Invalid date input: {date}. Must be a string or pandas Timestamp."
+        )
+
+
+def extract_date(filename):
+    """
+    Extracts a date from a filename in YYYY-MM-DD format.
+    """
+    date_pattern = r"\d{4}-\d{2}-\d{2}"  # Matches YYYY-MM-DD
+    match = re.search(date_pattern, filename)
+
+    if match:
+        date_str = match.group(0)
+        extracted_date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        return date_str
+    else:
+        logger.warning(f"No date found in filename: {filename}")
+        raise ValueError(
+            f"No date found in filename: {filename}. Ensure the filename contains a date in YYYY-MM-DD format."
         )
 
 
