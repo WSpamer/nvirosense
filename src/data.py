@@ -59,3 +59,12 @@ def data_processing(data_list):
     }
 
     return params
+
+
+def df_aggregate(df, interval):
+    if interval == "hour":
+        return df.resample("H").mean()
+    elif interval == "day":
+        return df.resample("D").mean()
+    else:
+        raise ValueError(f"Unsupported interval: {interval}")
