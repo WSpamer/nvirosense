@@ -32,6 +32,7 @@ def get_devices():
     return df
 
 
+@st.cache_data
 def fetch_data(start_date: str, end_date: str) -> dict:
     """Fetch data from the NViro API and return it as a DataFrame."""
     token = authenticate()
@@ -54,7 +55,7 @@ def fetch_data(start_date: str, end_date: str) -> dict:
     return data
 
 
-def display_data(data):
+def display_live_data(data):
     if not data:
         st.write("No data available.")
         return
@@ -68,6 +69,13 @@ def display_data(data):
         st.dataframe(df_outside)
 
 
+def display_import_data(df):
+    if df.empty:
+        st.write("No data available.")
+        return
+    st.dataframe(df)
+
+
 def main():
     st.title("Import Data")
     st.write("This page is used to import data from the NViro API.")
@@ -77,10 +85,16 @@ def main():
     end_date = st.sidebar.date_input("End Date", value=pd.to_datetime("today"))
     # start_time = st.time_input("Start Time", value=pd.to_datetime("now").time())
     # end_time = st.time_input("End Time", value=pd.to_datetime("now").time())
-    import_btn = st.sidebar.button(
+    import_live_btn = st.sidebar.button(
         "Fetch Data",
         key="btn_scrape",
     )
+    uploaded_file = st.sidebar.file_uploader("Choose a file")
+    if uploaded_file is not None:
+        dataframe = pd.read_csv(
+            uploaded_file, parse_dates=["datetime"], index_col="datetime"
+        )
+        st.session_state.import_data = dataframe
 
     end_date = end_date + pd.Timedelta(days=1)  # Include the end date in the range
     start_date = date_string(start_date, "long")
@@ -109,7 +123,10 @@ def main():
             st.session_state.data = data
     if st.session_state.data:
         data = st.session_state.data
-        display_data(data)
+        display_live_data(data)
+    if not st.session_state.import_data.empty:
+        df = st.session_state.import_data
+        display_import_data(df)
 
 
 main()
