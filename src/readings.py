@@ -69,7 +69,7 @@ def import_readings(device_name, readings_directory="data/readings", type="raw")
         raise ValueError(f"Path '{folder_path}' is not a directory.")
     logger.info(f"Importing readings from folder: {folder_path}")
 
-    file = find_file(folder_path, device_name=device_name)
+    file = find_file(folder_path, file_name=device_name)
     if file:
         logger.info(f"Importing readings from file: {file}")
     else:
