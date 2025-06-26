@@ -17,7 +17,7 @@ def calculate_utah_chill_units(temperature_celsius):
         return 1.0  # Optimal chill range
     elif 9.1 < temperature_celsius <= 12.4:
         return 0.5  # Reduced chill
-    elif 12.5 <= temperature_celsius <= 15.9:
+    elif 12.4 < temperature_celsius < 16.0:
         return 0.0  # No chill
     elif 16.0 <= temperature_celsius <= 18.0:
         return -0.5  # Negative chill
