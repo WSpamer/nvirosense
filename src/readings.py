@@ -4,7 +4,7 @@ import pandas as pd
 from loguru import logger
 from nviro_fetch.data import get_device_readings
 
-from env import project_path
+from env import get_project_path
 from files import find_file, fix_index
 
 
@@ -56,7 +56,7 @@ def import_readings(device_name, readings_directory="data/readings", type="raw")
         raise ValueError(
             f"Invalid type '{type}' specified. Must be 'raw' or 'cleaned'."
         )
-    readings_directory = os.path.join(project_path, readings_directory)
+    readings_directory = os.path.join(get_project_path(), readings_directory)
     if not os.path.exists(readings_directory):
         logger.error(f"Readings directory '{readings_directory}' does not exist.")
         raise ValueError(f"Readings directory '{readings_directory}' does not exist.")
