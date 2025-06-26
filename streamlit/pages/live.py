@@ -75,13 +75,7 @@ def plot_data(data, sensor: str, start_datetime, end_datetime):
     st.pyplot(fig)
 
 
-def live():
-
-    st.sidebar.header("Inputs")
-
-    sensor_list = env_global("sensor_list")
-    sensor = st.sidebar.selectbox("Choose a sensor", sensor_list)
-
+def filter_data():
     # Retrieve the start and end dates from session state or set default values
     if "data_start_date" in st.session_state:
         data_start_date = st.session_state.data_start_date
@@ -120,11 +114,21 @@ def live():
     start_datetime = pd.to_datetime(start_datetime, utc=True)
     end_datetime = pd.to_datetime(end_datetime, utc=True)
 
-    st.sidebar.write(f"Fetching data from {start_datetime} to {end_datetime}...")
+    return start_datetime, end_datetime
+
+
+def live():
+
+    st.sidebar.header("Inputs")
+
+    sensor_list = env_global("sensor_list")
+    sensor = st.sidebar.selectbox("Choose a sensor", sensor_list)
+
     # end_date = end_date + pd.Timedelta(days=1)  # Include the end date in the range
     # start_date = date_string(start_date, "long")
     # end_date = date_string(end_date, "long")
     # start_date = date_string(start_date, "long")
+    start_datetime, end_datetime = filter_data()
     if st.session_state.data:
         data = st.session_state.data
         plot_data(data, sensor, start_datetime, end_datetime)

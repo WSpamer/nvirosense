@@ -22,6 +22,30 @@ def local_css(file_name):
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 
+def apply_custom_css():
+    css = """
+        <style>
+            [data-testid='stFileUploader'] {
+                width: max-content;
+            }
+            [data-testid='stFileUploader'] section {
+                padding: 0;
+                float: left;
+            }
+            [data-testid='stFileUploader'] section > input + div {
+                display: none;
+            }
+            [data-testid='stFileUploader'] section + div {
+                float: right;
+                padding-top: 0;
+            }
+        </style>
+        """
+
+    st.markdown(css, unsafe_allow_html=True)
+
+
+apply_custom_css()
 local_css("style.css")
 
 

@@ -1,7 +1,10 @@
+import datetime
+
 import pandas as pd
 
 import streamlit as st
 from chill_units import calculate_utah_chill_units
+from env import env_global
 
 
 def format_data(data, type: str, start_datetime, end_datetime):
@@ -103,7 +106,6 @@ def plot_hourly_chill(df):
         df["chill_cum"],
         label="Hourly Chill",
         color="tab:green",
-        marker="o",
     )
     ax.set_title("Hourly Chill Units")
     ax.set_xlabel("Datetime")
@@ -145,6 +147,13 @@ def plot_daily_chill(df):
 def display_hourly(df):
 
     with st.expander("Hourly Chill", expanded=False):
+        df = df.rename(
+            columns={
+                "chill": "Hourly Chill",
+                "chill_cum": "Cumulative Chill",
+                "temp": "Temperature",
+            }
+        )
         st.dataframe(df)
 
 
@@ -152,6 +161,12 @@ def display_daily(df):
     df_chill = create_daily_chill(df)
 
     with st.expander("Daily Chill", expanded=False):
+        df_chill = df_chill.rename(
+            columns={
+                "chill": "Daily Chill",
+                "chill_cum": "Cumulative Chill",
+            }
+        )
         st.dataframe(df_chill)
 
 
@@ -161,26 +176,160 @@ def load_data(file):
     return df
 
 
+def filter_date(df, data_start_date=None, data_end_date=None):
+    # Retrieve the start and end dates from session state or set default values
+    if not data_start_date:
+        data_start_date = pd.to_datetime("today")
+    if not data_end_date:
+        data_end_date = pd.to_datetime("today")
+
+    # Use datetime_range_picker to create a datetime range picker
+    with st.expander("Filter Date:"):
+        cols = st.columns(2)
+        with cols[0]:
+            start_date = st.date_input(
+                "Start Date",
+                value=data_start_date,
+                min_value=data_start_date,
+                max_value=data_end_date,
+            )
+        with cols[1]:
+            end_date = st.date_input(
+                "End Date",
+                value=data_end_date,
+                min_value=data_start_date,
+                max_value=data_end_date,
+            )
+        cols = st.columns(2)
+        with cols[0]:
+            start_time = st.time_input("Start Time", value=datetime.time(0, 0))
+        with cols[1]:
+            end_time = st.time_input("End Time", value=datetime.time(23, 59))
+    start_datetime = f"{start_date} {start_time}"
+    end_datetime = f"{end_date} {end_time}"
+
+    start_datetime = pd.to_datetime(start_datetime, utc=True)
+    end_datetime = pd.to_datetime(end_datetime, utc=True)
+
+    df = df[start_datetime:end_datetime]
+    df["chill_cum"] = df["chill"].cumsum()
+
+    return df
+
+
+def filter_columns(df):
+
+    columns = df.columns.tolist()
+    selected_column = st.selectbox(
+        "Select a column to display",
+        options=columns,
+        index=0,
+    )
+    if selected_column:
+        value_min = df[selected_column].min()
+        value_max = df[selected_column].max()
+        input_min, input_max = st.slider(
+            f"Filter {selected_column}",
+            min_value=value_min,
+            max_value=value_max,
+            value=(value_min, value_max),
+        )
+        df = df[(df[selected_column] >= input_min) & (df[selected_column] <= input_max)]
+        return df
+
+
+def ui_metrics(df):
+    """Display UI metrics for the chill page."""
+    last_row = df["chill_cum"].tail(1)
+    # Count missing values in 'colB'
+    values_missing = df["chill"].isnull().sum()
+    values_total = df["chill"].count()
+    percent_missing = (values_missing / values_total) * 100
+    with st.expander("Metrics:", expanded=True):
+        cols = st.columns(2)
+        with cols[0]:
+            st.metric(
+                "Last Chill Cumulative",
+                f"{last_row.values[0]:.2f}",
+                delta=f"{last_row.values[0] - df['chill_cum'].iloc[-2]:.2f}",
+            )
+        with cols[1]:
+            st.metric("Missing Hours", f"{percent_missing:.2f}%")
+
+
+def apply_custom_css():
+    css = """
+        <style>
+            [data-testid='stFileUploader'] {
+                width: max-content;
+            }
+            [data-testid='stFileUploader'] section {
+                padding: 0;
+                float: left;
+            }
+            [data-testid='stFileUploader'] section > input + div {
+                display: none;
+            }
+            [data-testid='stFileUploader'] section + div {
+                float: right;
+                padding-top: 0;
+            }
+        </style>
+        """
+
+    st.markdown(css, unsafe_allow_html=True)
+
+
 def chill():
+    apply_custom_css()
     st.title("Chill Page")
+    debug = st.sidebar.checkbox("Debug Mode", value=True)
+
+    view = st.sidebar.selectbox(
+        "View",
+        ["Chill Hourly", "Chill Daily"],
+        index=0,
+    )
 
     # You can add more content here, such as images, text, or interactive elements.
 
     uploaded_file = st.sidebar.file_uploader("Choose a file")
-    if uploaded_file is not None:
-        dataframe = load_data(uploaded_file)
-        st.session_state.import_data = dataframe
+
+    if not debug:
+        if uploaded_file is not None:
+            dataframe = load_data(uploaded_file)
+            st.write(f"File uploaded: {uploaded_file}")
+            st.session_state.import_data = dataframe
+    else:
+        project_path = env_global("project_path")
+        file_example = "data/readings/chill/Outside_Chill_2025-06-24.csv"
+        file = f"{project_path}/{file_example}"
+        # For debugging, you can use a sample DataFrame
+        st.session_state.import_data = load_data(file)
     if not st.session_state.import_data.empty:
         df = st.session_state.import_data
+        # data_start_date=None, data_end_date=None
+        data_start_date = df.index.min()
+        data_end_date = df.index.max()
+        cols = st.columns(2)
+        with cols[1]:
+            df_filtered = filter_date(df, data_start_date, data_end_date)
+            with st.expander("Filter Columns", expanded=False):
+                df_filtered = filter_columns(df_filtered)
+        with cols[0]:
+            ui_metrics(df_filtered)
 
-        st.subheader("Hourly Chill")
-        display_hourly(df)
-        with st.expander("Plot", expanded=False):
-            plot_hourly_chill(df)
-        st.subheader("Daily Chill")
-        display_daily(df)
-        with st.expander("Plot", expanded=False):
-            plot_daily_chill(df)
+        if view == "Chill Hourly":
+            st.subheader("Hourly Chill")
+            with st.expander("Plot", expanded=True):
+                plot_hourly_chill(df_filtered)
+            display_hourly(df_filtered)
+        elif view == "Chill Daily":
+            st.subheader("Daily Chill")
+            with st.expander("Plot", expanded=False):
+                plot_daily_chill(df_filtered)
+            display_daily(df_filtered)
+
     else:
         st.write("No data available. Please upload a file.")
 

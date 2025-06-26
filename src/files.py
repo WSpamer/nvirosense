@@ -93,9 +93,15 @@ def get_latest_file(data_path, file_name="Outside"):
         logger.error(f"Path '{data_path}' is not a directory.")
         raise ValueError(f"Path '{data_path}' is not a directory.")
     file_details = parse_csv_file_info(data_path)
-    file_match = [file for file in file_details if file["file_name"] == file_name]
-    file_latest = max(file_match, key=lambda x: x["datetime"])
-    return file_latest
+    file_match = [file for file in file_details if file_name in file["file_name"]]
+    logger.info(f"File match: {file_match}")
+    if file_match:
+        logger.info(f"Found {len(file_match)} matching files for device: {file_name}")
+        file_latest = max(file_match, key=lambda x: x["datetime"])
+        return file_latest
+    else:
+        logger.warning(f"No matching files found for device: {file_name}")
+        raise ValueError(f"No matching files found for device: {file_name}")
 
 
 def export_dataframe(df, folder_path, filename):
@@ -114,6 +120,7 @@ def import_dataframe(file_name, folder_path="data/readings/current"):
     """Imports a CSV file into a DataFrame."""
     project_path = env_global("project_path")
     data_path = os.path.join(project_path, folder_path)
+    logger.info(f"Importing data from file: {file_name} in path: {data_path}")
     file = get_latest_file(data_path, file_name=file_name)
     file_path = file["file_path"]
     df = pd.read_csv(file_path, parse_dates=["datetime"], index_col="datetime")
