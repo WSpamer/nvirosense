@@ -1,0 +1,8 @@
+# [theme]
+# primaryColor = "#F63366"
+# backgroundColor = "#222831"
+
+[theme]
+base="dark"
+# primaryColor="#3028bd"
+backgroundColor="#1d1d20"
