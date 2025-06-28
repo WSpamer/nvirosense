@@ -212,9 +212,13 @@ def filter_date(df, data_start_date=None, data_end_date=None):
     end_datetime = pd.to_datetime(end_datetime, utc=True)
 
     df = df[start_datetime:end_datetime]
-    df["chill_cum"] = df["chill"].cumsum()
+    df_hour = df.resample("H").mean()
+    df_hour["chill"] = df_hour["TEMPERATURE"].apply(
+        lambda x: calculate_utah_chill_units(x)
+    )
+    df_hour["chill_cum"] = df_hour["chill"].cumsum()
 
-    return df
+    return df_hour
 
 
 def filter_columns(df):
@@ -283,11 +287,17 @@ def apply_custom_css():
 def chill():
     apply_custom_css()
     st.title("Chill Page")
-    debug = st.sidebar.checkbox("Debug Mode", value=True)
+    debug = st.sidebar.checkbox("Debug Mode", value=False)
 
     view = st.sidebar.selectbox(
         "View",
         ["Chill Hourly", "Chill Daily"],
+        index=0,
+    )
+
+    location = st.sidebar.selectbox(
+        "Location",
+        ["Outside", "Inside"],
         index=0,
     )
 
@@ -296,10 +306,39 @@ def chill():
     uploaded_file = st.sidebar.file_uploader("Choose a file")
 
     if not debug:
-        if uploaded_file is not None:
-            dataframe = load_data(uploaded_file)
-            st.write(f"File uploaded: {uploaded_file}")
-            st.session_state.import_data = dataframe
+        # if uploaded_file is not None:
+        #     dataframe = load_data(uploaded_file)
+        #     st.write(f"File uploaded: {uploaded_file}")
+        #     st.session_state.import_data = dataframe
+
+        if st.session_state.data:
+            data = st.session_state.data
+            if location == "Outside":
+                df = data["df_outside"]
+            else:
+                df = data["df_inside"]
+            data_start_date = df.index.min()
+            data_end_date = df.index.max()
+            cols = st.columns(2)
+            with cols[1]:
+                df_filtered = filter_date(df, data_start_date, data_end_date)
+                with st.expander("Filter Columns", expanded=False):
+                    df_filtered = filter_columns(df_filtered)
+            with cols[0]:
+                ui_metrics(df_filtered)
+
+            if view == "Chill Hourly":
+                st.subheader("Hourly Chill")
+                with st.expander("Plot", expanded=True):
+                    plot_hourly_chill(df_filtered)
+                display_hourly(df_filtered)
+            elif view == "Chill Daily":
+                st.subheader("Daily Chill")
+                with st.expander("Plot", expanded=False):
+                    plot_daily_chill(df_filtered)
+                display_daily(df_filtered)
+        else:
+            st.write("No data available. Please upload a file or fetch data.")
     else:
         project_path = env_global("project_path")
         file_example = "data/readings/chill/Outside_Chill_2025-06-24.csv"
@@ -330,25 +369,8 @@ def chill():
                 plot_daily_chill(df_filtered)
             display_daily(df_filtered)
 
-    else:
-        st.write("No data available. Please upload a file.")
-
-    # if st.session_state.data:
-    #     data = st.session_state.data
-    #     df_chill = format_data(
-    #         data,
-    #         type="Outside",
-    #         start_datetime=st.session_state.data_start_date,
-    #         end_datetime=st.session_state.data_end_date,
-    #     )
-    #     if df_chill is not None:
-    #         plot_chill_data(df_chill)
-    #     else:
-    #         st.write("No chill data available for the selected date range.")
+    # else:
+    #     st.write("No data available. Please upload a file or fetch data.")
 
 
-# if st.session_state.import_data.empty:
-#     st.header("No data available. Please fetch data first.")
-# else:
-#     chill()
 chill()

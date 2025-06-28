@@ -1,26 +1,30 @@
 [
-    {
-        "devEui":"2cf7f1c06330007c",
-        "device_name":"Willow Creek Weather",
-        "device_group":"Willow Creek",
-        "department":"Willow Creek"
-    },
-    {
-        "devEui":"2cf7f1c04390029c",
-        "device_name":"Aquanet Light Sensor",
-        "device_group":"Willow Creek",
-        "department":"Willow Creek"
-    },
-    {
-        "devEui":"2cf7f1c0645000ef",
-        "device_name":"AquaNet Temp & RH",
-        "device_group":"Willow Creek",
-        "department":"Willow Creek"
-    },
-    {
-        "devEui":"2cf7f1c063300050",
-        "device_name":"AquaNet Wind",
-        "device_group":"Willow Creek",
-        "department":"Willow Creek"
-    }
+  {
+    "devEui": "2cf7f1c06330007c",
+    "device_name": "Willow Creek Weather",
+    "device_group": "Willow Creek",
+    "department": "Willow Creek",
+    "location": "Outside"
+  },
+  {
+    "devEui": "2cf7f1c04390029c",
+    "device_name": "Aquanet Light Sensor",
+    "device_group": "Willow Creek",
+    "department": "Willow Creek",
+    "location": "Inside"
+  },
+  {
+    "devEui": "2cf7f1c0645000ef",
+    "device_name": "AquaNet Temp & RH",
+    "device_group": "Willow Creek",
+    "department": "Willow Creek",
+    "location": "Inside"
+  },
+  {
+    "devEui": "2cf7f1c063300050",
+    "device_name": "AquaNet Wind",
+    "device_group": "Willow Creek",
+    "department": "Willow Creek",
+    "location": "Inside"
+  }
 ]

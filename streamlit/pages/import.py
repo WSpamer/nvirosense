@@ -78,6 +78,63 @@ def fetch_data(start_date: str, end_date: str) -> dict:
 
     return data
 
+def import_historical_data():
+    """Import historical data from a CSV file."""
+    project_path = env_global("project_path")
+    data_path = "data/readings/final"
+    folder_path = os.path.join(project_path, data_path)
+    if not os.path.exists(folder_path):
+        st.error(f"Data folder '{folder_path}' does not exist.")
+        return
+    df_inside = pd.read_csv(
+        f"{folder_path}/Inside.csv", parse_dates=["datetime"], index_col="datetime"
+    )
+    df_outside = pd.read_csv(
+        f"{folder_path}/Outside.csv", parse_dates=["datetime"], index_col="datetime"
+    )
+    ans = [
+        {"name": "Inside", "df": df_inside},
+        {"name": "Outside", "df": df_outside},
+    ]
+    
+    return ans
+
+def append_data(df_live, df_import):
+    """Append imported data to live data."""
+    if df_live.empty:
+        return df_import
+    if df_import.empty:
+        return df_live
+    # Ensure both DataFrames have the same columns
+    common_columns = df_live.columns.intersection(df_import.columns)
+    df_live = df_live[common_columns]
+    df_import = df_import[common_columns]
+    dt_end = df_import.index.max()
+    
+    df_live = df_live[df_live.index > dt_end]
+
+    # Append the imported data to the live data
+    return pd.concat([df_live, df_import], axis=0).sort_index()
+
+def current_data(data_live):
+    data_import = import_historical_data()
+    if not data_import:
+        st.write("No historical data available.")
+        return
+    df_hist_inside = data_import[0]["df"]
+    df_hist_outside = data_import[1]["df"]
+    df_live_inside = data_live["df_inside"]
+    df_live_outside = data_live["df_outside"]
+
+    df_inside = append_data(df_live_inside, df_hist_inside)
+    df_outside = append_data(df_live_outside, df_hist_outside)
+
+    params = {
+        "df_inside": df_inside,
+        "df_outside": df_outside,
+    }
+    
+    return params
 
 def display_live_data(data):
     if not data:
@@ -135,7 +192,8 @@ def main():
             msg_info = st.sidebar.info(
                 f"Fetching data from \n {start_date} to {end_date}..."
             )
-            data = fetch_data(start_date, end_date)
+            data_live = fetch_data(start_date, end_date)
+            data = current_data(data_live)
             msg_info.empty()  # Clear the loading message
             if not data:
                 st.write("No data available for the selected date range.")
@@ -148,9 +206,9 @@ def main():
     if st.session_state.data:
         data = st.session_state.data
         display_live_data(data)
-    if not st.session_state.import_data.empty:
-        df = st.session_state.import_data
-        display_import_data(df)
+    # if not st.session_state.import_data.empty:
+    #     df = st.session_state.import_data
+    #     display_import_data(df)
 
 
 main()
